@@ -55,7 +55,7 @@ class gbpHeat(object):
                _log.info("Cmd execution failed! with this Return Error: \n%s" %(cmd_out))
                return 0
  
-    def cfg_all_cli(self,val,name,heat_temp='',tenant='',upload=False):
+    def cfg_all_cli(self,val,name,heat_temp='',tenant='',upload=False, parameter_args=None):
         """
         Function to create/delete a pre-defined Heat Template
         -parma val : 0 for delete, 1 for create
@@ -72,6 +72,8 @@ class gbpHeat(object):
                              '~/')
             cmd_cfg = "heat --os-tenant-name %s stack-create -f %s "\
                      %(tenant,heat_temp)+ name
+            if parameter_args:
+                cmd_cfg += parameter_args
             cfg_out = self.run_heat_cli(cmd_cfg)
             if not cfg_out:
                return 0

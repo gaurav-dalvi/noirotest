@@ -454,15 +454,17 @@ class NatFuncTestMethods(object):
             LOG.info("\nStep: Launch VMs in two diff avail-zones\n")
         # launch Nova VMs
         if gbpnova.vm_create_api(VM1_NAME,
-                                      'ubuntu_multi_nics',
+                                      conf['vm_image'],
                                       self.pt1id[1],
+                                      flavor_name=conf['vm_flavor'],
                                       avail_zone=az1) == 0:
            LOG.error(
            "\n///// VM Create using PTG %s failed /////" %(PTG1NAME))
            return 0
         if gbpnova.vm_create_api(VM2_NAME,
-                                      'ubuntu_multi_nics',
+                                      conf['vm_image'],
                                       self.pt2id[1],
+                                      flavor_name=conf['vm_flavor'],
                                       avail_zone=az2) == 0:
            LOG.error(
            "\n///// VM Create using PTG %s failed /////" %(PTG2NAME))
@@ -687,7 +689,10 @@ class NatFuncTestMethods(object):
        	LOG.info(
                 "\n ADDING SSH-Filter to Svc_epg created for every dhcp_agent")
 	if not PLUGIN_TYPE:
-        	aci=gbpApic(apicip)
+                if conf.get('apic_passwd'):
+                    aci=gbpApic(apicip, password=conf['apic_passwd'])
+                else:
+                    aci=gbpApic(apicip)
         	svcepglist = [
                 	'TestPtg1',
                 	'L2PNat'

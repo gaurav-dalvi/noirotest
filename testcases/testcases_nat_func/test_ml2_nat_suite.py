@@ -48,7 +48,10 @@ class NatML2TestSuite(object):
         self.comp1 = Compute(conf['network_node'])
         self.comp2 = Compute(conf['compute-2'])
         self.neutron = neutronCli(self.cntlrip)
-        self.apic = gbpApic(self.apicip, mode='ml2')
+        if conf.get('apic_passwd'):
+            self.apic = gbpApic(self.apicip, mode='ml2', password=conf['apic_passwd'])
+        else:
+            self.apic = gbpApic(self.apicip, mode='ml2')
         self.tenant_list = ['ENGG', 'HRC']
         self.tnt1, self.tnt2 = self.tenant_list[0],\
             self.tenant_list[1]
@@ -502,7 +505,7 @@ class NatML2TestSuite(object):
         )
         self.NETtoVM = {}
         vm_num = 1
-        az = self.neutron.alternate_az(self.avzone):  # Intent is to place VMs alternately on two comp-nodes
+        az = self.neutron.alternate_az(self.avzone)  # Intent is to place VMs alternately on two comp-nodes
         avzonetoHost = [self.avhost, self.novahost]
         for netid, name in self.netIDnames[self.tnt1].iteritems():
             self.NETtoVM[name] = {}

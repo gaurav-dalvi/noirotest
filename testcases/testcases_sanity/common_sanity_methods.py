@@ -13,6 +13,7 @@ from libs.neutron import *
 from libs.gbp_compute import *
 from libs.gbp_crud_libs import GBPCrud
 from libs.gbp_pexp_traff_libs import gbpExpTraff
+from libs.gbp_pexp_traff_libs import gbpExpTraffNoHping3
 from testcases.config import conf
 from testcases.testcases_nat_func.traff_from_extgw import *
 
@@ -146,7 +147,7 @@ class TestError(Exception):
 class crudML2(object):
     global ml2tnt1, ml2tnt2, ml2tnt3, ml2Ntks, ml2Subs, Cidrs, addscopename, \
 	   addscopename_shd, subpoolname, subpoolname_shd, subpool, \
-	   subpool_shd
+	   subpool_shd, traffic_class
     ml2tnt1, ml2tnt2, ml2tnt3 = TNT_LIST_ML2[0],TNT_LIST_ML2[1],TNT_LIST_ML2[2]
     ml2Ntks,ml2Subs,Cidrs = {},{},{}
     ml2Ntks[ml2tnt1] = ['Net1', 'Net2']
@@ -162,6 +163,10 @@ class crudML2(object):
     subpool = '22.22.22.0/24'
     subpool_shd = NONATCIDR #Repurposing subpool_shd for NONAT
     Cidrs[ml2tnt1] = ['11.11.11.0/28', '21.21.21.0/28']
+    if conf.get('no_hping3') and conf['no_hping3'] == 'True':
+        traffic_class = gbpExpTraffNoHping3
+    else:
+        traffic_class = gbpExpTraff
 
     def create_ml2_tenants(self):
 	neutron.addDelkeystoneTnt(TNT_LIST_ML2, 'create')
@@ -575,15 +580,17 @@ class crudGBP(object):
         for vm,prop in gbp_vm_ntk_ip[tnt].iteritems():
 	    if tnt == tnt1:
                 vm_ip = self.novatnt1.vm_create_api(vm,
-                                      'ubuntu_multi_nics',
+                                      conf['vm_image'],
                                       prop['port'],
                                       avail_zone=az.next(),
+                                      flavor_name=conf['vm_flavor'],
 				      ret_ip = True)
 	    if tnt == tnt2:
                 vm_ip = self.novatnt2.vm_create_api(vm,
-                                      'ubuntu_multi_nics',
+                                      conf['vm_image'],
                                       prop['port'],
                                       avail_zone=az.next(),
+                                      flavor_name=conf['vm_flavor'],
 				      ret_ip = True)
 	    if not vm_ip:
                 LOG.error("\n//// %s Create failed ////" %(vm))
@@ -918,7 +925,7 @@ class sendTraffic(object):
 	for vm,prop in ml2_vm_ntk_ip[tnt].iteritems():
 	    if ext:
 	        pingable_ips = [ip for val in ml2_vm_ntk_ip[tnt].values() for ip in val][0::2]+\
-			[EXTRTRIP1,EXTRTRIP2]
+                    [EXTRTRIP1,EXTRTRIP2]
 	    else:
 	        pingable_ips = [ip for val in ml2_vm_ntk_ip[tnt].values() for ip in val][0::2]
 	    pingable_ips.remove(prop[0]) #Removing the Src_IP from the list of pingable_ips
@@ -939,7 +946,7 @@ class sendTraffic(object):
 	vm_property = self.generate_vm_prop(tnt,ext=ext)
 	print "VM Properties == ", vm_property
 	for vm in tenant_vms:
-	    vm_traff = gbpExpTraff(COMPUTE1,vm_property[vm]['netns'],
+	    vm_traff = traffic_class(COMPUTE1,vm_property[vm]['netns'],
 				vm_property[vm]['src_ip'],
 				vm_property[vm]['dest_ip'])
 	    if not vm_traff.run_and_verify_traffic(proto,tcp_syn_only=1):
@@ -996,7 +1003,7 @@ class sendTraffic(object):
 	    else:
 		target_ips = vm_property['dest_ip']
 	    print "Target IPs for the VM ", vm, target_ips
-	    vm_traff = gbpExpTraff(COMPUTE1,vm_property['netns'],
+	    vm_traff = traffic_class(COMPUTE1,vm_property['netns'],
 				vm_property['src_ip'],
 				target_ips)
 	    if not vm_traff.run_and_verify_traffic(proto,tcp_syn_only=1):

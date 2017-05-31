@@ -114,7 +114,7 @@ class gbpApic(object):
         """
         env.host_string = apic_ip
         env.user = 'admin'
-        env.password = 'noir0123'
+        env.password = self.passwd
         if action == 'enable':
            cmd = 'switchport %s switch %s interface %s' %(action,switch_node_id,port)
         if action == 'disable':
@@ -133,7 +133,7 @@ class gbpApic(object):
            cmd = 'reload controller 1'
         else:
            cmd = 'system-reboot'
-        self.exec_admin_cmd(ip,cmd)
+        self.exec_admin_cmd(ip,cmd, passwd=self.passwd)
         return 1
 
     def aciStatus(self,apic_ip,node,nodetype='leaf',status='active'):
@@ -141,7 +141,7 @@ class gbpApic(object):
         Verify the node status in ACI
         node: leaf or spine's hostname
         """
-        cmdout = self.exec_admin_cmd(apic_ip,'acidiag fnvread | grep %s' %(node))
+        cmdout = self.exec_admin_cmd(apic_ip,'acidiag fnvread | grep %s' %(node), passwd=self.passwd)
         if re.search('\d+\s+%s\s+[A-Z0-9]+\s+\d+.\d+.\d+.\d+\/32\s+\\b%s\s+\d\s+\\b%s' %(node,nodetype,status),cmdout,re.I) != None:
            return 1
            

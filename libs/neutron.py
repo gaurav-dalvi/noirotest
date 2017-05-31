@@ -5,6 +5,7 @@ from time import sleep
 from fabric.api import cd, run, env, hide, get, settings
 from fabric.context_managers import *
 from neutronclient.v2_0 import client as nclient
+from testcases.config import conf
 
 class neutronPy(object):
     def __init__(self, controllerIp, username='admin', password='noir0123', tenant='admin'):
@@ -391,10 +392,12 @@ class neutronCli(object):
 	availzone:: pass it as <zone-name>|<hostname>
 	hostname as it appears in nova hypervisor-list
         """
+        image = conf['vm_image']
+        flavor = conf['vm_flavor']
         if net:
-           cmd = 'nova --os-tenant-name %s boot %s --image ubuntu_multi_nics --flavor m1.large --nic net-id=%s' %(tenant,vmname,net)
+           cmd = 'nova --os-tenant-name %s boot %s --image %s --flavor %s --nic net-id=%s' %(tenant,vmname,image,flavor,net)
         if port:
-           cmd = 'nova --os-tenant-name %s boot %s --image ubuntu_multi_nics --flavor m1.large --nic port-id=%s' %(tenant,vmname,port)
+           cmd = 'nova --os-tenant-name %s boot %s --image %s --flavor %s --nic port-id=%s' %(tenant,vmname,image,flavor,port)
 	if availzone:
 	   cmd = cmd+' --availability-zone %s' %(availzone)
         if self.runcmd(cmd):

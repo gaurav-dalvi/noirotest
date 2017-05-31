@@ -1,0 +1,52 @@
+#!highlight yaml
+
+# Mandatory: User must not change the below config params
+plugin-type: 'merged' # OR keep it null string
+dnat_heat_temp: 'heat_dnat_only.yaml'
+snat_heat_temp: 'heat_snat_only.yaml'
+preexist_dnat_temp: 'preexist_dnat_only.yaml'
+preexist_snat_temp: 'preexist_snat_only.yaml'
+main_setup_heat_temp: 'heat_tmpl_regular_dp_tests.yaml'
+nova_agg_name: 'gbp_agg'
+nova_az_name: 'gbp_zone'
+heat_dp_stack_name: 'dpstack'
+heat_dp_nat_stack_name: 'dpnatstack'
+key_name: 'gbpkey' #Ensure that it is same as mentioned in heat template
+apic_system_id: 'noirolab'
+primary_L3out: 'Management-Out' #Ensure to keep these names as is
+secondary_L3out: 'Datacenter-Out'
+# User editable config params
+no_hping3: 'True'
+image_user: 'cirros'
+image_password: 'cubswin:)'
+image_prompt: '\$'
+num_comp_nodes: 2
+apic_ip: '10.101.1.10'
+apic_passwd: 'C!sc0123'
+leaf1_ip: '10.101.1.21'
+leaf2_ip: '10.101.1.22'
+spine_ip: '10.101.1.31'
+controller_ip: '10.101.1.40'
+neutronconffile: '/etc/neutron/neutron.conf' #Ensure it has the VALID apic_external_network config section defined
+network_node: '10.101.1.41' #in our lab env, compute-1=network_node
+az_comp_node: 'fab101-compute-1.dmzlab.local'
+compute-2: '10.101.1.42'
+ext_rtr: '10.101.1.5'
+gwip1_extrtr: '1.101.1.254'
+gwip2_extrtr: '1.101.2.254'
+extrtr_ip1: '1.101.1.1'
+extrtr_ip2: '1.101.2.1'
+#NOTE:Below Flag 'preexist' if True,then ensure 'Datacenter-Out' & 'Management-Out' are configured in APIC
+#with their resp external-policies as 'DcExtPol' & 'MgmtExtPol' << ensure name staring are as EXACT as given
+#here
+#preexist: True #See NOTE immediate above. For now 'commented out' as its fed from command-line
+#vm_image: '"trusty-multi-if"'
+vm_image: 'TestVM'
+vm_flavor: 'm1.tiny'
+test_parameters:
+  bd_type: vxlan
+  ip_version: ipv4
+  vpc_type: vpc
+# Enable the below flag inorder to live-debug on Failure of a Testcase
+pausetodebug: false
+
